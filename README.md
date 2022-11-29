@@ -1,5 +1,7 @@
 ## FleetManagerPlugin
-This plugin contains common fleet management functionality used by the specific fleet plugins (e.g. the GameLiftStarter plugin).
+This plugin contains common fleet management functionality used by the specific fleet plugins (e.g. the Game LiftStarter plugin).
+
+Refer to [GameLiftStarterPlugin](https://github.com/spayne/GameLiftStarterPlugin) for a step by step guide to deploying using this plugin.
 
 The modules include:
 * FleetManagerModule - that communicates the the specific fleet backend
