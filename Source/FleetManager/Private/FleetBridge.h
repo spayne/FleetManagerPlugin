@@ -11,7 +11,10 @@
 class IWebSocket;
 class IFleetTypeSpecificParams;
 
-
+//
+// Manages HTTP Requests and responses to the backend configured by 
+// IFleetTypeSpecificParams (e.g. which python script to start and which ports to use)
+//
 class FFleetBridge : public TSharedFromThis<FFleetBridge>
 {
 public:

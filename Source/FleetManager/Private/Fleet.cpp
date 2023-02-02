@@ -215,7 +215,9 @@ public:
 		return MetadataChangedDelegate;
 	}
 
-	void CB(bool Result, const FString& JsonDetailsString)
+
+	// parse the backend specific details - ie what components need to be setup?
+	void ParseMetadata(const FString& JsonDetailsString)
 	{
 		TSharedRef< TJsonReader<> > JsonReader = TJsonReaderFactory<>::Create(JsonDetailsString);
 
@@ -229,7 +231,7 @@ public:
 
 		StaticCastSharedRef<FFleetInfo>(Info)->Type = FText::FromString(FleetType);
 		StaticCastSharedRef<FFleetInfo>(Info)->Description = FText::FromString(FleetDescription);
-		
+
 		TArray<TSharedPtr<FJsonValue>> Components = JsonMetadata->GetArrayField("Components");
 		for (int32 ComponentIndex = 0; ComponentIndex < Components.Num(); ++ComponentIndex)
 		{
@@ -238,8 +240,8 @@ public:
 			FString ComponentName = JsonComponent->Get()->GetStringField("Name");
 			FString ComponentDescription = JsonComponent->Get()->GetStringField("Description");
 			TSharedRef<FFleetComponentInfo> ComponentInfo = MakeShared<FFleetComponentInfo>(
-																FText::FromString(ComponentName), 
-																FText::FromString(ComponentDescription));
+				FText::FromString(ComponentName),
+				FText::FromString(ComponentDescription));
 
 			TArray<TSharedPtr<FJsonValue>> Requests = JsonComponent->Get()->GetArrayField("Requests");
 			for (int32 RequestIndex = 0; RequestIndex < Requests.Num(); ++RequestIndex)
@@ -249,12 +251,31 @@ public:
 				FString RequestName = JsonRequest->Get()->GetStringField("Name");
 				FString RequestPath = JsonRequest->Get()->GetStringField("RequestPath");
 				ComponentInfo->AddRequestInfo(MakeShared<FFleetRequestInfo>(
-																FText::FromString(RequestName),
-																RequestPath));
+					FText::FromString(RequestName),
+					RequestPath));
 			}
 			FleetComponents.Add(MakeShared<FFleetComponent>(ComponentInfo, FleetBridge));
 		}
 		MetadataChangedDelegate.Broadcast();
+	}
+
+	//
+	// The backend will respond with a Json string which identifies the components
+	// associated with the backend (e.g. for AWS, this might inlude setting up Cognito)
+	//
+	// if this function returns False it may be that the python script failed to execute
+	// (e.g. caused by incorrect setup - eg. boto3 path is all wrong).
+	//
+	void HandleLoadMetadataResponse(bool Result, const FString& JsonDetailsString)
+	{
+		if (Result == false)
+		{
+			UE_LOG(FleetManagerModule, Error, TEXT("Could not load backend metadata.  Check your Plugin Settings. e.g. Refer to https://github.com/spayne/GameLiftStarterPlugin#step-5---modify-your-project-to-support-gamelift"));
+		}
+		else
+		{
+			ParseMetadata(JsonDetailsString);
+		}
 	}
 protected:
 	TSharedRef<IFleetInfo> Info;
@@ -274,7 +295,7 @@ TSharedPtr<IFleet> FFleetFactory::Create(const FString& FleetType, TSharedPtr<IF
 
 	// Fire off a metadata request
 	FFleetBridge::FFleetRequestCompleteDelegate CB;
-	CB.BindSP(Fleet.ToSharedRef(), &BridgedFleet::FFleet::CB);
+	CB.BindSP(Fleet.ToSharedRef(), &BridgedFleet::FFleet::HandleLoadMetadataResponse);
 
 	Bridge->SubmitRequest("/metadata", "POST", CB);
 	
