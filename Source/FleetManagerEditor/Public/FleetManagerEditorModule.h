@@ -39,6 +39,7 @@ private:
 	void RegisterMenus();
 	
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
+	bool CanSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
 private:
 

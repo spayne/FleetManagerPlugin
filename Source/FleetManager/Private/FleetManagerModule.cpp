@@ -25,6 +25,12 @@ TSharedPtr<IFleet> FFleetManagerModule::CreateFleet()
 	return Dummy;
 }
 
+bool FFleetManagerModule::VerifySettings()
+{
+	return true; // dummy implementation
+}
+
+
 #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FFleetManagerModule, FleetManager)

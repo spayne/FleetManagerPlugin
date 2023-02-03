@@ -19,6 +19,6 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	
+	virtual bool VerifySettings() override;
 	virtual TSharedPtr<IFleet> CreateFleet() override;
-
 };

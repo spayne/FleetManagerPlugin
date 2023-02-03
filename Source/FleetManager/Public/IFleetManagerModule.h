@@ -32,5 +32,6 @@ public:
 		return FleetModule;
 	}
 
+	virtual bool VerifySettings() = 0;
 	virtual TSharedPtr<IFleet> CreateFleet() = 0;
 };

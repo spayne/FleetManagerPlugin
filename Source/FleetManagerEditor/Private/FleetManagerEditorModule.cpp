@@ -41,7 +41,9 @@ void FFleetManagerEditorModule::OnPostEngineInit()
 		FExecuteAction::CreateRaw(this, &FFleetManagerEditorModule::PluginButtonClicked),
 		FCanExecuteAction());
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FFleetManagerEditorModule::RegisterMenus));
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FleetManagerTabName, FOnSpawnTab::CreateRaw(this, &FFleetManagerEditorModule::OnSpawnPluginTab))
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FleetManagerTabName, 
+									FOnSpawnTab::CreateRaw(this, &FFleetManagerEditorModule::OnSpawnPluginTab),
+									FCanSpawnTab::CreateRaw(this, &FFleetManagerEditorModule::CanSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FFleetManagerTabTitle", "Fleet Manager"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 	RegisterSettings();
@@ -88,6 +90,13 @@ TSharedRef<SWidget> FFleetManagerEditorModule::CreateFleetManager(
 {
 	return SNew(SFleetManager, FleetIn, ConstructUnderMajorTab, ConstructUnderWindow);
 }
+
+bool FFleetManagerEditorModule::CanSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	bool CanSpawn = IFleetManagerModule::Get().VerifySettings();
+	return CanSpawn;
+}
+
 
 TSharedRef<SDockTab> FFleetManagerEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
