@@ -32,6 +32,9 @@ void AddMenuExtension(FMenuBuilder& MenuBuilder)
 
 void FFleetManagerEditorModule::OnPostEngineInit()
 {
+	UE_LOG(LogTemp, Warning, TEXT("InPostEngineInit"));
+	bPostEngineInitCalled = true;
+
 	FFleetManagerStyle::Initialize();
 	FFleetManagerStyle::ReloadTextures();
 	FFleetManagerCommands::Register();
@@ -70,17 +73,15 @@ void FFleetManagerEditorModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 
-	UToolMenus::UnRegisterStartupCallback(this);
-
-	UToolMenus::UnregisterOwner(this);
-
-	FFleetManagerStyle::Shutdown();
-
-	FFleetManagerCommands::Unregister();
-
-	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FleetManagerTabName);
-
-	UnregisterSettings();
+	if (bPostEngineInitCalled)
+	{
+		UToolMenus::UnRegisterStartupCallback(this);
+		UToolMenus::UnregisterOwner(this);
+		FFleetManagerStyle::Shutdown();
+		FFleetManagerCommands::Unregister();
+		FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FleetManagerTabName);
+		UnregisterSettings();
+	}
 }
 
 TSharedRef<SWidget> FFleetManagerEditorModule::CreateFleetManager(

@@ -49,7 +49,7 @@ private:
 	TSharedPtr<class SFleetManager> FleetManagerWidget;
 
 	TSharedPtr<FExtender> MenuExtender;
-
+	bool bPostEngineInitCalled;
 private:
 	
 	
