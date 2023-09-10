@@ -46,6 +46,7 @@ public class FleetManagerEditorModule : ModuleRules
 				"Slate",
 				"SlateCore",
 				"ApplicationCore",
+				"MessageLog"
 				// ... add private dependencies that you statically link with here ...	
 				
 			}
