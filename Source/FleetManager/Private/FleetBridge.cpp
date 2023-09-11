@@ -28,7 +28,9 @@ FFleetBridge::FFleetBridge(TSharedPtr<IFleetTypeSpecificParams> ParamHelper)
 	HttpPrefix = FString::Printf(TEXT("http://localhost:%d"), HttpPort);
 	HttpPrefixWithBackend = FString::Printf(TEXT("%s/%s"), *HttpPrefix, *BackendID);
 
+	// e.g. INSERT="c:/users/seand/AppData/Local/Programs/Python/Python310/lib/site-packages"
 	FString INSERT = ParamHelper->GetPythonPrefixScript();
+
 	FString IMPORTS = FString::Printf(TEXT("import sys\n%s\nimport fleet_bridge"), *INSERT); 
 	FString START_COMMAND = FString::Printf(TEXT("fleet_bridge.start_servers(%d,%d)"), HttpPort, WebsocketPort);
 	PythonWrapper::RunPythonPair(IMPORTS,START_COMMAND);
@@ -117,7 +119,8 @@ void FFleetBridge::ConfigGetComplete(FHttpRequestPtr Request, FHttpResponsePtr R
 	OutstandingRequestT Temp = *OutstandingRequest.Get();
 	OutstandingRequest.Reset();
 
-	if (Response->GetResponseCode() == 200)
+
+	if (Response && Response->GetResponseCode() == 200)
 	{
 		FString Content = Response->GetContentAsString();
 		TSharedRef< TJsonReader<> > JsonReader = TJsonReaderFactory<>::Create(Content);
@@ -128,7 +131,15 @@ void FFleetBridge::ConfigGetComplete(FHttpRequestPtr Request, FHttpResponsePtr R
 	}
 	else
 	{
-		UE_LOG(FleetManagerModule, Warning, TEXT("got invalid response: %d"), Response->GetResponseCode());
+		if (!Response)
+		{
+			UE_LOG(FleetManagerModule, Warning, TEXT("got null response.  Perhaps python setup is invalid?"));
+		}
+		else
+		{
+			UE_LOG(FleetManagerModule, Warning, TEXT("got invalid response: %d"), Response->GetResponseCode());
+		}
+		
 		Temp.CompleteDelegate.ExecuteIfBound(false, TEXT(""));
 	}
 }
